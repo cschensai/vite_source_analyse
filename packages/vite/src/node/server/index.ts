@@ -266,11 +266,16 @@ export async function createServer(
   const middlewareMode = !!serverConfig.middlewareMode
 
   const middlewares = connect() as Connect.Server
+
+  // cs-log创建服务器 http/https
   const httpServer = middlewareMode
     ? null
     : await resolveHttpServer(serverConfig, middlewares)
+
+  // cs-log创建websocket服务器，和client端进行hmr更新
   const ws = createWebSocketServer(httpServer, config)
 
+  // cs-log chokidar 对node本地文件进行监听(change/add/unlink)
   const { ignored = [], ...watchOptions } = serverConfig.watch || {}
   const watcher = chokidar.watch(path.resolve(root), {
     ignored: ['**/node_modules/**', '**/.git/**', ...ignored],
@@ -348,6 +353,7 @@ export async function createServer(
     _pendingReload: null
   }
 
+  // cs-log 转换html使用，放在全局的sever中
   server.transformIndexHtml = createDevHtmlTransformFn(server)
 
   exitProcess = async () => {
@@ -364,6 +370,7 @@ export async function createServer(
     process.stdin.on('end', exitProcess)
   }
 
+  // cs-log change
   watcher.on('change', async (file) => {
     file = normalizePath(file)
     // invalidate module graph cache on file change
@@ -379,11 +386,12 @@ export async function createServer(
       }
     }
   })
-
+  // cs-log add
   watcher.on('add', (file) => {
     handleFileAddUnlink(normalizePath(file), server)
   })
 
+  // cs-log unlink
   watcher.on('unlink', (file) => {
     handleFileAddUnlink(normalizePath(file), server, true)
   })
@@ -434,7 +442,7 @@ export async function createServer(
   // as-is without transforms.
   middlewares.use(servePublicMiddleware(config.publicDir))
 
-  // main transform middleware
+  // cs-log 2.转换核心文件
   middlewares.use(transformMiddleware(server))
 
   // serve static files
@@ -470,7 +478,7 @@ export async function createServer(
   postHooks.forEach((fn) => fn && fn())
 
   if (!middlewareMode) {
-    // transform index.html
+    // 1. cs-log 转换html文件，读取静态资源响应给浏览器
     middlewares.use(indexHtmlMiddleware(server))
     // handle 404s
     middlewares.use((_, res) => {

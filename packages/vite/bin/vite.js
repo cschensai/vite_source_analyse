@@ -38,6 +38,7 @@ if (debugIndex > 0) {
 }
 
 function start() {
+  // cs-log 开始加载服务器入口文件
   require('../dist/node/cli')
 }
 

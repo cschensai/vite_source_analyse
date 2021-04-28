@@ -77,6 +77,8 @@ cli
   .action(async (root: string, options: ServerOptions & GlobalCLIOptions) => {
     // output structure is preserved even after bundling so require()
     // is ok here
+
+    // cs-log 开始创建服务器
     const { createServer } = await import('./server')
     try {
       const server = await createServer({

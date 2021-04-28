@@ -127,6 +127,7 @@ const devHtmlHook: IndexHtmlTransformHook = async (
   }
 }
 
+// cs-log 读取html文件资源，并开始转换html内容
 export function indexHtmlMiddleware(
   server: ViteDevServer
 ): Connect.NextHandleFunction {
@@ -137,7 +138,9 @@ export function indexHtmlMiddleware(
       const filename = getHtmlFilename(url, server)
       if (fs.existsSync(filename)) {
         try {
+          // cs-log 读取完响应给浏览器
           let html = fs.readFileSync(filename, 'utf-8')
+          // cs-log server.transformIndexHtml ===== createDevHtmlTransformFn
           html = await server.transformIndexHtml(url, html)
           return send(req, res, html, 'html')
         } catch (e) {
