@@ -443,7 +443,7 @@ export async function createServer(
   // as-is without transforms.
   middlewares.use(servePublicMiddleware(config.publicDir))
 
-  // cs-log 2.转换核心文件
+  // cs-log 2. 核心 转换文件
   middlewares.use(transformMiddleware(server))
 
   // serve static files
