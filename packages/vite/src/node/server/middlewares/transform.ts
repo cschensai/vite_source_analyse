@@ -35,6 +35,7 @@ const isDebug = !!process.env.DEBUG
 
 const knownIgnoreList = new Set(['/', '/favicon.ico'])
 
+// cs-log 两个功能 1.转换第三包的路径  2.对转换后的路径进行读取内容
 export function transformMiddleware(
   server: ViteDevServer
 ): Connect.NextHandleFunction {
@@ -63,17 +64,13 @@ export function transformMiddleware(
       return next()
     }
 
+    // cs-log client 没加载成功 异常处理
     if (
       server._pendingReload &&
-      // always allow vite client requests so that it can trigger page reload
       !req.url?.startsWith(CLIENT_PUBLIC_PATH) &&
       !req.url?.includes('vite/dist/client')
     ) {
-      // missing dep pending reload, hold request until reload happens
       server._pendingReload.then(() =>
-        // If the refresh has not happened after timeout, Vite considers
-        // something unexpected has happened. In this case, Vite
-        // returns an empty response that will error.
         setTimeout(() => {
           // status code request timeout
           res.statusCode = 408
@@ -130,6 +127,11 @@ export function transformMiddleware(
         )
       }
 
+
+      //　cs-log 处理各种请求类型
+      // isJSRequest： import xx from '../x.js'
+      // isImportRequest import xx from 'vue'
+      // isCSSRequest import xx from '../app.css'
       if (
         isJSRequest(url) ||
         isImportRequest(url) ||
@@ -142,8 +144,6 @@ export function transformMiddleware(
         // not valid browser import specifiers by the importAnalysis plugin.
         url = unwrapId(url)
 
-        // for CSS, we need to differentiate between normal CSS requests and
-        // imports
         if (isCSSRequest(url) && req.headers.accept?.includes('text/css')) {
           url = injectQuery(url, 'direct')
         }
@@ -160,7 +160,7 @@ export function transformMiddleware(
           return res.end()
         }
 
-        // resolve, load and transform using the plugin container
+        // cs-log将转换后的路径进行读取内容
         const result = await transformRequest(url, server, {
           html: req.headers.accept?.includes('text/html')
         })

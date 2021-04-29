@@ -22,6 +22,12 @@ export function createDevHtmlTransformFn(
   const [preHooks, postHooks] = resolveHtmlTransforms(server.config.plugins)
 
   return (url: string, html: string): Promise<string> => {
+    // cs-log 开始真正的转换
+    // html为根目录下面的index.html的内容
+    // url为/index.html，
+    // 第三个参数的执行结果为/index.html
+    // 第四个参数为一个大数组，prehooks是空的，第二个为是vite自己的/@vite/client链接的返回函数，第三个是有一个react-refresh的插件在里面的
+    // 第五个参数为当前server
     return applyHtmlTransforms(
       html,
       url,

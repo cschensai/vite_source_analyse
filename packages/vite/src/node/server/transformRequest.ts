@@ -53,15 +53,16 @@ export async function transformRequest(
     return cached
   }
 
-  // resolve
+  // 根据url获取from 后面的一块内容 from 'xx?  |  xx'   xx:resolveId
   const id = (await pluginContainer.resolveId(url))?.id || url
   const file = cleanUrl(id)
 
   let code: string | null = null
   let map: SourceDescription['map'] = null
 
-  // load
   const loadStart = isDebug ? Date.now() : 0
+
+  // cs-log 首次进来读取的是入口文件的main.js (里面有npm 包 本地文件)  来判断你不是第三方的包  loadResult ? 是 : 不是
   const loadResult = await pluginContainer.load(id, ssr)
   if (loadResult == null) {
     // if this is an html request and there is no load result, skip ahead to
@@ -69,10 +70,8 @@ export async function transformRequest(
     if (options.html && !id.endsWith('.html')) {
       return null
     }
-    // try fallback loading it from fs as string
-    // if the file is a binary, there should be a plugin that already loaded it
-    // as string
     try {
+      // cs-log 不是包 直接读取文件
       code = await fs.readFile(file, 'utf-8')
       isDebug && debugLoad(`${timeFrom(loadStart)} [fs] ${prettyUrl}`)
     } catch (e) {
@@ -120,6 +119,7 @@ export async function transformRequest(
 
   // transform
   const transformStart = isDebug ? Date.now() : 0
+  // cs-log 对入口文件main.js里面的引用路径进行分析重写
   const transformResult = await pluginContainer.transform(code, id, map, ssr)
   if (
     transformResult == null ||

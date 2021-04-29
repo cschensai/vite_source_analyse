@@ -406,6 +406,7 @@ export async function createPluginContainer(
       )
     },
 
+    // cs-log 解析resolveId
     async resolveId(rawId, importer = join(root, 'index.html'), skips, ssr) {
       const ctx = new Context()
       ctx.ssr = !!ssr
@@ -492,6 +493,7 @@ export async function createPluginContainer(
         const start = isDebug ? Date.now() : 0
         let result
         try {
+          // cs-log 可以通过plugins/importAnalysis.ts文件重写路径
           result = await plugin.transform.call(ctx as any, code, id, ssr)
         } catch (e) {
           ctx.error(e)

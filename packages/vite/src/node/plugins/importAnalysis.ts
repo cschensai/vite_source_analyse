@@ -101,6 +101,7 @@ export function importAnalysisPlugin(config: ResolvedConfig): Plugin {
       server = _server
     },
 
+    // cs-log 调用了这个transform方法
     async transform(source, importer, ssr) {
       const prettyImporter = prettifyUrl(importer, root)
 
@@ -113,6 +114,7 @@ export function importAnalysisPlugin(config: ResolvedConfig): Plugin {
       await init
       let imports: readonly ImportSpecifier[] = []
       try {
+        // cs-log 解析from 'xx'的位置
         imports = parseImports(source)[0]
       } catch (e) {
         const isVue = importer.endsWith('.vue')
@@ -141,6 +143,7 @@ export function importAnalysisPlugin(config: ResolvedConfig): Plugin {
               `[no imports] ${prettyImporter}`
             )}`
           )
+        // cs-log 没有from 'xx'语法 原来的代码返回
         return source
       }
 
@@ -172,6 +175,7 @@ export function importAnalysisPlugin(config: ResolvedConfig): Plugin {
           url = url.replace(base, '/')
         }
 
+        // 
         const resolved = await this.resolve(url, importer)
 
         if (!resolved) {
@@ -189,12 +193,15 @@ export function importAnalysisPlugin(config: ResolvedConfig): Plugin {
         // normalize all imports into resolved URLs
         // e.g. `import 'foo'` -> `import '/@fs/.../node_modules/foo/index.js`
         if (resolved.id.startsWith(root + '/')) {
+          // cs-log 绝对路径文件
           // in root: infer short absolute path from root
           url = resolved.id.slice(root.length)
         } else if (fs.existsSync(cleanUrl(resolved.id))) {
+          // cs-log 处理迪第三方白 vue ---> /@fs/vue
           // exists but out of root: rewrite to absolute /@fs/ paths
           url = path.posix.join(FS_PREFIX + resolved.id)
         } else {
+          // cs-log 处理相对路径
           url = resolved.id
         }
 
@@ -382,6 +389,7 @@ export function importAnalysisPlugin(config: ResolvedConfig): Plugin {
                 }
               }
             } else {
+              // cs-log 通过magic-string进行重写，替换自定义后的路径
               str().overwrite(start, end, isDynamicImport ? `'${url}'` : url)
             }
           }

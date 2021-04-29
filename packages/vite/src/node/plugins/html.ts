@@ -445,6 +445,7 @@ export type IndexHtmlTransform =
       transform: IndexHtmlTransformHook
     }
 
+// cs-log 实现对插件预构建（vue | react | react-dom）或者预加载
 export function resolveHtmlTransforms(
   plugins: readonly Plugin[]
 ): [IndexHtmlTransformHook[], IndexHtmlTransformHook[]] {
@@ -466,6 +467,32 @@ export function resolveHtmlTransforms(
 
   return [preHooks, postHooks]
 }
+
+
+
+
+// cs-log 转换后的代码
+// <!DOCTYPE html>
+// <html lang="en">
+//   <head>
+// <script type="module" src="/@vite/client"></script>
+//   <script type="module">
+// import RefreshRuntime from "/@react-refresh"
+// RefreshRuntime.injectIntoGlobalHook(window)
+// window.$RefreshReg$ = () => {}
+// window.$RefreshSig$ = () => (type) => type
+// window.__vite_plugin_react_preamble_installed__ = true
+// </script>
+//     <meta charset="UTF-8" />
+//     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+//     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+//     <title>Vite App</title>
+//   </head>
+//   <body>
+//     <div id="root"></div>
+//     <script type="module" src="/src/main.tsx"></script>
+//   </body>
+// </html>
 
 export async function applyHtmlTransforms(
   html: string,

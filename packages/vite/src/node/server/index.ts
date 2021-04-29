@@ -398,6 +398,7 @@ export async function createServer(
 
   // apply server configuration hooks from plugins
   const postHooks: ((() => void) | void)[] = []
+
   for (const plugin of plugins) {
     if (plugin.configureServer) {
       postHooks.push(await plugin.configureServer(server))
